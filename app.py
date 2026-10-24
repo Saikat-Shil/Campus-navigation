@@ -28,7 +28,7 @@ if _IS_PRODUCTION and not _secret_key_env:
         "Set it in the Render dashboard under Environment > Secret Files or "
         "Environment Variables before deploying."
     )
-app.secret_key = _secret_key_env or "presidency-univ-secret-key-local-dev-only"
+app.secret_key = _secret_key_env or os.urandom(32)
 
 # Admin password — configurable via environment variable.
 # REQUIRED in production: set the CAMPUS_ADMIN_PASSWORD environment variable on Render.
@@ -39,7 +39,7 @@ if _IS_PRODUCTION and not _admin_password_env:
         "Set it in the Render dashboard under Environment > Secret Files or "
         "Environment Variables before deploying."
     )
-ADMIN_PASSWORD = _admin_password_env or "presidency@admin2026-local-dev-only"
+ADMIN_PASSWORD = _admin_password_env
 FACILITIES_FILE = os.path.join(os.path.dirname(__file__), "data", "campus_facilities.json")
 
 
