@@ -139,21 +139,6 @@ For local development, default values allow the app to run out-of-the-box. For p
 
 ---
 
-## 🌐 Deployment (Render)
-
-This project is pre-configured for one-click deployment on **Render**:
-
-1. Create a new **Web Service** on Render and link your GitHub repository: `Saikat-Shil/Campus-navigation`.
-2. Configure settings:
-   - **Environment:** `Python`
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn app:app` (or automatically read from `Procfile`)
-3. Under **Environment Variables**, add:
-   - `FLASK_SECRET_KEY`: *[A strong random string]*
-   - `CAMPUS_ADMIN_PASSWORD`: *[Your chosen administrative password]*
-4. Click **Deploy Web Service**.
-
----
 
 ## 📄 License
 
