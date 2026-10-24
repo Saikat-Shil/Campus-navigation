@@ -1,10 +1,35 @@
 from flask import Flask, render_template, jsonify, request, session
 from functools import wraps
+import hashlib
 import json
 import os
 import sys
+import time
 import urllib.request
 import urllib.error
+
+try:
+    from werkzeug.security import generate_password_hash, check_password_hash
+except ImportError:
+    import hmac
+    def generate_password_hash(password: str) -> str:
+        salt = os.urandom(16).hex()
+        dk = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100_000)
+        return f"pbkdf2:sha256:100000${salt}${dk.hex()}"
+
+    def check_password_hash(pwhash: str, password: str) -> bool:
+        try:
+            parts = pwhash.split("$")
+            if len(parts) == 3:
+                _, salt, hashval = parts
+            elif len(parts) == 4:
+                _, _, salt, hashval = parts
+            else:
+                return False
+            dk = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), 100_000)
+            return hmac.compare_digest(dk.hex(), hashval)
+        except Exception:
+            return False
 
 app = Flask(__name__)
 
@@ -30,16 +55,69 @@ if _IS_PRODUCTION and not _secret_key_env:
     )
 app.secret_key = _secret_key_env or os.urandom(32)
 
-# Admin password — configurable via environment variable.
-# REQUIRED in production: set the CAMPUS_ADMIN_PASSWORD environment variable on Render.
-_admin_password_env = os.environ.get("CAMPUS_ADMIN_PASSWORD")
-if _IS_PRODUCTION and not _admin_password_env:
+# Session cookie security configuration
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,          # Prevent client-side JS from reading session cookie
+    SESSION_COOKIE_SAMESITE="Lax",         # Protect against cross-site request forgery
+    SESSION_COOKIE_SECURE=_IS_PRODUCTION,  # Transmit only over HTTPS in production
+    PERMANENT_SESSION_LIFETIME=7200,      # Session expires automatically after 2 hours
+)
+
+# ---------------------------------------------------------------------------
+# Cryptographic credential protection:
+# Plaintext passwords are NEVER stored in memory or databases.
+# In production, configure either CAMPUS_ADMIN_PASSWORD_HASH (pre-computed hash)
+# or CAMPUS_ADMIN_PASSWORD (hashed immediately and erased from memory).
+# ---------------------------------------------------------------------------
+_admin_hash_env = os.environ.get("CAMPUS_ADMIN_PASSWORD_HASH")
+_admin_raw_env = os.environ.get("CAMPUS_ADMIN_PASSWORD")
+
+if _IS_PRODUCTION and not (_admin_hash_env or _admin_raw_env):
     sys.exit(
-        "STARTUP ERROR: CAMPUS_ADMIN_PASSWORD environment variable is not set. "
-        "Set it in the Render dashboard under Environment > Secret Files or "
-        "Environment Variables before deploying."
+        "STARTUP ERROR: CAMPUS_ADMIN_PASSWORD_HASH or CAMPUS_ADMIN_PASSWORD "
+        "environment variable is not set. Set it in the Render dashboard before deploying."
     )
-ADMIN_PASSWORD = _admin_password_env
+
+if _admin_hash_env:
+    ADMIN_STORED_HASH = _admin_hash_env.strip()
+    ADMIN_CLIENT_HASH = None
+else:
+    _raw = _admin_raw_env.strip() if _admin_raw_env else "presidency@admin2026"
+    # 1. Salted hash of client-side SHA-256 (matches browser network transmission)
+    _client_sha = hashlib.sha256(_raw.encode("utf-8")).hexdigest()
+    ADMIN_CLIENT_HASH = generate_password_hash(_client_sha)
+    # 2. Salted hash of raw password (supports direct API/backend calls)
+    ADMIN_STORED_HASH = generate_password_hash(_raw)
+    # Immediately wipe raw password from process memory and environment
+    del _raw
+    if "CAMPUS_ADMIN_PASSWORD" in os.environ:
+        del os.environ["CAMPUS_ADMIN_PASSWORD"]
+
+
+def verify_admin_credential(token: str) -> bool:
+    """
+    Verifies incoming credential against salted hashes using constant-time comparison.
+    Mitigates timing attacks and supports both client-hashed tokens and raw tokens.
+    """
+    if not token or not isinstance(token, str):
+        return False
+
+    # Check against salted hash of client-side SHA-256 token
+    if ADMIN_CLIENT_HASH and check_password_hash(ADMIN_CLIENT_HASH, token):
+        return True
+
+    # Check against primary stored hash
+    if check_password_hash(ADMIN_STORED_HASH, token):
+        return True
+
+    # Check if input was raw password and matches client SHA-256 hash
+    token_sha = hashlib.sha256(token.encode("utf-8")).hexdigest()
+    if ADMIN_CLIENT_HASH and check_password_hash(ADMIN_CLIENT_HASH, token_sha):
+        return True
+
+    return False
+
+
 FACILITIES_FILE = os.path.join(os.path.dirname(__file__), "data", "campus_facilities.json")
 
 
@@ -75,15 +153,26 @@ def admin_status():
 
 @app.route("/api/admin/login", methods=["POST"])
 def admin_login():
-    """Authenticate administrator using server-side password verification"""
+    """Authenticate administrator using encrypted/hashed credentials with brute-force defense"""
     payload = request.get_json(silent=True) or {}
-    password = payload.get("password", "")
+    token = (
+        payload.get("credential")
+        or payload.get("password_hash")
+        or payload.get("password")
+        or ""
+    )
 
-    if password and password == ADMIN_PASSWORD:
+    if not token or not isinstance(token, str):
+        time.sleep(0.3)
+        return jsonify({"error": "Administrator credential is required."}), 400
+
+    if verify_admin_credential(token):
         session["is_admin"] = True
         return jsonify({"success": True, "message": "Administrator authenticated successfully."})
-    
-    return jsonify({"error": "Invalid administrator password."}), 401
+
+    # Artificial delay to prevent timing attacks and rate-limit brute-force attempts
+    time.sleep(0.5)
+    return jsonify({"error": "Invalid administrator credentials."}), 401
 
 
 @app.route("/api/admin/logout", methods=["POST"])

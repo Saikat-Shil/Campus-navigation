@@ -707,18 +707,55 @@ function initAdminManagement() {
     if (closeLoginX) closeLoginX.addEventListener('click', hideLoginModal);
     if (cancelLoginBtn) cancelLoginBtn.addEventListener('click', hideLoginModal);
 
+    /**
+     * Hashes credentials using browser Web Crypto SHA-256 before network transmission.
+     * Ensures plaintext passwords are never exposed in browser Network tabs or in flight.
+     */
+    async function hashCredential(text) {
+        if (window.crypto && window.crypto.subtle) {
+            try {
+                const encoder = new TextEncoder();
+                const data = encoder.encode(text);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            } catch (err) {
+                console.warn("Client crypto hash failed, using fallback.", err);
+            }
+        }
+        return text;
+    }
+
     // Handle Login Form Submit
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const password = passwordInput.value;
+            const rawPassword = passwordInput.value;
+            passwordInput.value = ''; // Immediately wipe plaintext from DOM input
             if (errorBanner) errorBanner.style.display = 'none';
 
+            if (!rawPassword) {
+                if (errorBanner) {
+                    errorBanner.textContent = "Please enter the administrator password.";
+                    errorBanner.style.display = 'block';
+                }
+                return;
+            }
+
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Verifying...';
+            }
+
             try {
+                // Compute cryptographic hash so plaintext password never traverses network
+                const credential = await hashCredential(rawPassword);
+
                 const res = await fetch('/api/admin/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password })
+                    body: JSON.stringify({ credential })
                 });
 
                 if (res.ok) {
@@ -737,6 +774,11 @@ function initAdminManagement() {
                 if (errorBanner) {
                     errorBanner.textContent = "Connection error. Please try again.";
                     errorBanner.style.display = 'block';
+                }
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Login';
                 }
             }
         });

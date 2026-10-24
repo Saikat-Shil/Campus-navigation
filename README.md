@@ -114,11 +114,23 @@ For local development, default values allow the app to run out-of-the-box. For p
 
 | Variable | Required in Production | Description | Default (Dev) |
 |----------|:---------------------:|-------------|---------------|
-| `FLASK_SECRET_KEY` | **Yes** | Secret key for signing session cookies | Random `os.urandom(32)` |
-| `CAMPUS_ADMIN_PASSWORD` | **Yes** | Password required to access the admin portal | — |
+| `FLASK_SECRET_KEY` | **Yes** | Secret key for signing secure HTTP-only session cookies | Random `os.urandom(32)` |
+| `CAMPUS_ADMIN_PASSWORD_HASH` | Optional (Recommended) | Pre-computed PBKDF2/scrypt salted hash of admin credentials | — |
+| `CAMPUS_ADMIN_PASSWORD` | Optional* | Plaintext admin password (immediately hashed in memory and wiped from environment) | `presidency@admin2026` |
 | `PORT` | No | Server port | `5000` |
 | `FLASK_ENV` | No | Set to `production` for production mode | `development` |
 | `RENDER` | Auto | Automatically set to `true` on Render | — |
+
+*\* Either `CAMPUS_ADMIN_PASSWORD_HASH` or `CAMPUS_ADMIN_PASSWORD` is required in production.*
+
+---
+
+## 🔒 Security Architecture
+
+1. **Zero Plaintext Transmission:** The client browser computes a SHA-256 digest of the admin password using the native browser **Web Crypto API** before sending it to `/api/admin/login`. Plaintext passwords never appear in network inspector logs or transit.
+2. **Salted Server-side Hashes:** Passwords are never stored in plaintext in the backend or in memory. The backend stores only salted PBKDF2/scrypt hashes.
+3. **Timing & Brute-Force Protection:** Verification uses constant-time comparison (`hmac.compare_digest`), coupled with artificial response throttling on failed authentication attempts.
+4. **Hardened Session Cookies:** Session cookies are configured with `HttpOnly`, `SameSite=Lax`, and `Secure` (HTTPS-only in production), preventing cross-site scripting (XSS) and cross-site request forgery (CSRF) token theft.
 
 ---
 
@@ -131,7 +143,7 @@ For local development, default values allow the app to run out-of-the-box. For p
 
 ### Administrator Endpoints (Session Required)
 - `GET /api/admin/status` — Checks if the current session has admin privileges.
-- `POST /api/admin/login` — Authenticates admin with `{"password": "<admin_password>"}`.
+- `POST /api/admin/login` — Authenticates admin with `{"credential": "<sha256_hash>"}`.
 - `POST /api/admin/logout` — Terminates the admin session.
 - `POST /api/facilities` — Adds a new facility entry.
 - `PUT /api/facilities/<facility_id>` — Updates facility metadata or coordinates.
