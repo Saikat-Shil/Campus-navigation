@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campus Navigation</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin="" />
+
+    <!-- Application CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-content">
+            <div class="header-titles">
+                <h1>Campus Outdoor Navigation</h1>
+                <p class="subtitle">Presidency University, Bengaluru — Outdoor Navigation</p>
+            </div>
+            <div class="header-actions">
+                <!-- Logged-out State -->
+                <button type="button" id="open-admin-login-btn" class="admin-btn secondary" title="Admin Login">🔐 Admin Login</button>
+                
+                <!-- Logged-in State (Protected) -->
+                <div id="admin-logged-in-controls" class="admin-controls-group" style="display: none;">
+                    <span class="admin-status-badge">🛡️ Admin Active</span>
+                    <button type="button" id="open-admin-manager-btn" class="admin-btn primary">⚙️ Manage Facilities</button>
+                    <button type="button" id="admin-logout-btn" class="admin-btn text">🚪 Logout</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="map-container">
+        <!-- Floating Facility Search Box -->
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="facility-search-input" placeholder="Search facilities or seminar halls..." autocomplete="off" spellcheck="false">
+                <button type="button" id="search-clear-btn" class="search-clear-btn" title="Clear search" aria-label="Clear search">&times;</button>
+            </div>
+            <div id="search-results-list" class="search-results-dropdown" style="display: none;"></div>
+        </div>
+
+        <!-- Floating Admin Placement Banner (Visible when admin is clicking to place a facility) -->
+        <div id="admin-placement-banner" class="placement-banner" style="display: none;">
+            <span class="banner-text">📍 Click anywhere on the map to set location for: <strong id="placement-target-name">...</strong></span>
+            <button type="button" id="cancel-placement-btn" class="banner-cancel-btn">Cancel</button>
+        </div>
+
+        <div id="map"></div>
+
+        <!-- Floating Walking Route Info Card -->
+        <div id="route-nav-card" class="route-nav-card" style="display: none;">
+            <div class="route-nav-content">
+                <span class="route-nav-icon">🚶</span>
+                <div class="route-nav-meta">
+                    <div class="route-nav-destination">Walking to <strong id="route-dest-name">Destination</strong></div>
+                    <div class="route-nav-metrics">
+                        <span id="route-distance-text" class="metric-highlight">0 m</span>
+                        <span class="metric-dot">•</span>
+                        <span id="route-duration-text" class="metric-highlight">0 mins</span>
+                        <span class="metric-sub">(pedestrian route)</span>
+                    </div>
+                </div>
+            </div>
+            <button type="button" id="clear-route-btn" class="route-clear-btn" title="Clear walking route" aria-label="Clear route">&times;</button>
+        </div>
+
+        <!-- Floating Action Button for User Location -->
+        <div class="locate-control-container">
+            <button type="button" id="locate-user-btn" class="locate-btn" title="Show my current location" aria-label="Show my current location">
+                <span id="locate-icon" class="locate-icon">🎯</span>
+                <span id="locate-spinner" class="locate-spinner" style="display: none;"></span>
+            </button>
+        </div>
+
+        <!-- Location Status / Error Toast -->
+        <div id="location-toast" class="location-toast" style="display: none;"></div>
+    </main>
+
+    <!-- Admin Login Modal -->
+    <div id="admin-login-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Administrator Authentication</h3>
+                <button type="button" id="close-login-modal-x" class="modal-close-x">&times;</button>
+            </div>
+            <p class="modal-desc">Please enter the administrator password to manage campus facilities.</p>
+            <form id="admin-login-form">
+                <div class="form-group">
+                    <label for="admin-password-input">Password</label>
+                    <input type="password" id="admin-password-input" class="form-input" placeholder="Enter admin password" required autocomplete="current-password">
+                </div>
+                <div id="login-error-banner" class="error-alert" style="display: none;"></div>
+                <div class="modal-footer">
+                    <button type="button" id="cancel-login-btn" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" id="submit-login-btn" class="btn btn-primary">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Facility Manager Modal -->
+    <div id="admin-manager-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-dialog wide">
+            <div class="modal-header">
+                <h3>Campus Facility Management</h3>
+                <button type="button" id="close-manager-modal-x" class="modal-close-x">&times;</button>
+            </div>
+            <div class="manager-tabs">
+                <button type="button" id="tab-unmapped-btn" class="tab-btn active">Unverified / Pending (<span id="unmapped-count">0</span>)</button>
+                <button type="button" id="tab-all-btn" class="tab-btn">All Facilities (<span id="all-count">0</span>)</button>
+                <button type="button" id="tab-add-btn" class="tab-btn">+ Add New Facility</button>
+            </div>
+            <div id="manager-tab-content" class="manager-body">
+                <!-- Dynamically populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Location Placement Modal -->
+    <div id="confirm-location-modal" class="modal-backdrop" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3>Confirm Location Placement</h3>
+            </div>
+            <p class="modal-desc">Set location for <strong id="confirm-facility-name">...</strong> to the selected coordinate?</p>
+            <div class="coords-preview" id="confirm-coords-display">[0.00000, 0.00000]</div>
+            <div class="modal-footer">
+                <button type="button" id="cancel-confirm-btn" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="save-location-btn" class="btn btn-primary">Save Location</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" 
+            crossorigin=""></script>
+
+    <!-- Application JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+[
+  {
+    "id": "canteen",
+    "name": "Canteen (ಕ್ಯಾಂಟೀನ್)",
+    "category": "Dining",
+    "coordinates": [
+      13.16839,
+      77.53613
+    ],
+    "icon": "🍽️",
+    "color": "#ea580c",
+    "source": "OpenStreetMap (way: 1146740685)",
+    "description": "Student and faculty campus dining hall"
+  },
+  {
+    "id": "admission_office",
+    "name": "Admission Office",
+    "category": "Administration",
+    "coordinates": [
+      13.16915,
+      77.53402
+    ],
+    "icon": "🏛️",
+    "color": "#2563eb",
+    "source": "OpenStreetMap (way: 1146740687)",
+    "description": "University admission inquiries and administrative office"
+  },
+  {
+    "id": "cafe_coffee_day",
+    "name": "Cafe Coffee Day",
+    "category": "Cafe",
+    "coordinates": [
+      13.16863,
+      77.53528
+    ],
+    "icon": "☕",
+    "color": "#b45309",
+    "source": "OpenStreetMap (node: 10738018260)",
+    "description": "Campus coffee shop with outdoor seating"
+  },
+  {
+    "id": "federal_bank_atm",
+    "name": "Federal Bank ATM",
+    "category": "Banking",
+    "coordinates": [
+      13.16866,
+      77.53531
+    ],
+    "icon": "🏧",
+    "color": "#059669",
+    "source": "OpenStreetMap (node: 10738018258)",
+    "description": "24/7 campus ATM (Federal Bank)"
+  },
+  {
+    "id": "fee_payment_centre",
+    "name": "Fee and Payments Centre",
+    "category": "Administration",
+    "coordinates": [
+      13.16867,
+      77.53529
+    ],
+    "icon": "💳",
+    "color": "#3b82f6",
+    "source": "OpenStreetMap (node: 10738018259)",
+    "description": "Academic fee payments and student accounting"
+  },
+  {
+    "id": "restrooms",
+    "name": "Campus Restrooms",
+    "category": "Facility",
+    "coordinates": [
+      13.1686,
+      77.53529
+    ],
+    "icon": "🚻",
+    "color": "#7c3aed",
+    "source": "OpenStreetMap (node: 10738018263)",
+    "description": "Wheelchair-accessible campus restrooms"
+  },
+  {
+    "id": "small_lawn",
+    "name": "Small Lawn",
+    "category": "Green Space",
+    "coordinates": [
+      13.16939,
+      77.53547
+    ],
+    "icon": "🌳",
+    "color": "#16a34a",
+    "source": "OpenStreetMap (way: 1146740689)",
+    "description": "Central green lawn area"
+  },
+  {
+    "id": "big_lawn",
+    "name": "Big Lawn",
+    "category": "Green Space",
+    "coordinates": [
+      13.17068,
+      77.53603
+    ],
+    "icon": "🌳",
+    "color": "#15803d",
+    "source": "OpenStreetMap (way: 1146740690)",
+    "description": "Main open grounds and event lawn"
+  },
+  {
+    "id": "fountain",
+    "name": "Central Fountain",
+    "category": "Landmark",
+    "coordinates": [
+      13.16929,
+      77.5349
+    ],
+    "icon": "⛲",
+    "color": "#0284c7",
+    "source": "OpenStreetMap (way: 1146740684)",
+    "description": "Campus roundabout fountain"
+  },
+  {
+    "id": "south_bike_parking",
+    "name": "South Bike Parking",
+    "category": "Parking",
+    "coordinates": [
+      13.17155,
+      77.53557
+    ],
+    "icon": "🛵",
+    "color": "#475569",
+    "source": "OpenStreetMap (way: 1146740688)",
+    "description": "Two-wheeler student parking area"
+  },
+  {
+    "id": "north_bike_parking",
+    "name": "North Bike Parking",
+    "category": "Parking",
+    "coordinates": [
+      13.17309,
+      77.53573
+    ],
+    "icon": "🛵",
+    "color": "#475569",
+    "source": "OpenStreetMap (way: 1146740691)",
+    "description": "North campus two-wheeler parking lot"
+  },
+  {
+    "id": "surface_car_parking",
+    "name": "Surface Car Parking",
+    "category": "Parking",
+    "coordinates": [
+      13.16983,
+      77.53598
+    ],
+    "icon": "🚗",
+    "color": "#334155",
+    "source": "OpenStreetMap (node: 10738018254)",
+    "description": "Faculty and visitor four-wheeler parking"
+  },
+  {
+    "id": "campus_gate_south",
+    "name": "Campus Gate (South Entrance)",
+    "category": "Campus Gate",
+    "coordinates": [
+      13.17177,
+      77.53547
+    ],
+    "icon": "🚪",
+    "color": "#dc2626",
+    "source": "OpenStreetMap (node: 10738018256)",
+    "description": "Perimeter security gate off Kakolu Road"
+  },
+  {
+    "id": "campus_gate_north",
+    "name": "Campus Gate (North Entrance)",
+    "category": "Campus Gate",
+    "coordinates": [
+      13.17171,
+      77.53604
+    ],
+    "icon": "🚪",
+    "color": "#dc2626",
+    "source": "OpenStreetMap (node: 10738018252)",
+    "description": "Main entry/exit security gate"
+  },
+  {
+    "id": "auditorium",
+    "name": "University Auditorium",
+    "category": "Auditorium",
+    "coordinates": null,
+    "pending_location": true,
+    "icon": "🎭",
+    "color": "#9333ea",
+    "source": "Admin Verified (Ground Truth)",
+    "description": "Main university auditorium used for cultural events, convocations, guest lectures, and other university events. Located near O.A.T. with canteen nearby."
+  },
+  {
+    "id": "football_court",
+    "name": "Football Court",
+    "category": "Sports",
+    "coordinates": [
+      13.17144,
+      77.53499
+    ],
+    "pending_location": false,
+    "icon": "⚽",
+    "color": "#059669",
+    "source": "Admin Verified (Ground Truth)",
+    "description": "Outdoor football ground and sports facility at Presidency University (upper-left area of official campus map)."
+  },
+  {
+    "id": "e_block",
+    "name": "E Block",
+    "category": "Academics",
+    "coordinates": [
+      13.16905,
+      77.53333
+    ],
+    "pending_location": false,
+    "building": "E Block",
+    "icon": "🏫",
+    "color": "#2563eb",
+    "source": "Admin Verified (Ground Truth)",
+    "description": "Academic building housing departmental seminar halls and lecture halls.",
+    "sub_facilities": [
+      {
+        "id": "seminar_hall_1",
+        "name": "Seminar Hall 1",
+        "building": "E Block",
+        "floor": "Ground Floor",
+        "status": "Available"
+      },
+      {
+        "id": "seminar_hall_2",
+        "name": "Seminar Hall 2",
+        "building": "E Block",
+        "floor": "Ground Floor",
+        "status": "Available"
+      }
+    ]
+  },
+  {
+    "id": "f_block",
+    "name": "F Block",
+    "category": "Academics",
+    "coordinates": [
+      13.1687,
+      77.5332
+    ],
+    "pending_location": false,
+    "building": "F Block",
+    "icon": "🏫",
+    "color": "#2563eb",
+    "source": "Admin Verified (Ground Truth)",
+    "description": "Academic building housing departmental seminar halls and faculty offices.",
+    "sub_facilities": [
+      {
+        "id": "seminar_hall_3",
+        "name": "Seminar Hall 3",
+        "building": "F Block",
+        "floor": "Ground Floor",
+        "status": "Available"
+      },
+      {
+        "id": "seminar_hall_4",
+        "name": "Seminar Hall 4",
+        "building": "F Block",
+        "floor": "Ground Floor",
+        "status": "Available"
+      }
+    ]
+  },
+  {
+    "id": "l_block",
+    "name": "L Block",
+    "category": "Academics",
+    "coordinates": [
+      13.16836,
+      77.53302
+    ],
+    "pending_location": false,
+    "building": "L Block",
+    "icon": "🏫",
+    "color": "#2563eb",
+    "source": "Admin Verified (Ground Truth)",
+    "description": "Academic building housing specialized departmental seminar and colloquium facilities.",
+    "sub_facilities": [
+      {
+        "id": "seminar_hall_5",
+        "name": "Seminar Hall 5",
+        "building": "L Block",
+        "floor": "Basement",
+        "status": "Available"
+      },
+      {
+        "id": "seminar_hall_6",
+        "name": "Seminar Hall 6",
+        "building": "L Block",
+        "floor": "Basement",
+        "status": "Upcoming — Not yet available"
+      }
+    ]
+  }
+]
